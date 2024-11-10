@@ -1,0 +1,14 @@
+C:\Users\User\source\repos\BlackJackKursinis\bin\Release\net8.0\BlackJackKursinis.exe
+C:\Users\User\source\repos\BlackJackKursinis\bin\Release\net8.0\BlackJackKursinis.deps.json
+C:\Users\User\source\repos\BlackJackKursinis\bin\Release\net8.0\BlackJackKursinis.runtimeconfig.json
+C:\Users\User\source\repos\BlackJackKursinis\bin\Release\net8.0\BlackJackKursinis.dll
+C:\Users\User\source\repos\BlackJackKursinis\bin\Release\net8.0\BlackJackKursinis.pdb
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.AssemblyInfoInputs.cache
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.AssemblyInfo.cs
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.dll
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\refint\BlackJackKursinis.dll
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.pdb
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\BlackJackKursinis.genruntimeconfig.cache
+C:\Users\User\source\repos\BlackJackKursinis\obj\Release\net8.0\ref\BlackJackKursinis.dll
