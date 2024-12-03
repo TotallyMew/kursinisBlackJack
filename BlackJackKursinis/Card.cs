@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace BlackJackKursinis
 {
-    internal class Card
+    public class Card
     {
-        string rank;
-        string suit;
+        private string rank;
+        private string suit;
 
-        public Card(string rank, string suit) 
+        private Card(string rank, string suit) 
         {
             this.rank = rank;
             this.suit = suit;
@@ -34,6 +34,12 @@ namespace BlackJackKursinis
             return int.Parse(rank);
 
         }
+
+        public static Card CreateCard(string rank, string suit)
+        {
+            return new Card(rank, suit);
+        }
+
         public bool isAce()
         {
             if (rank == "Ace")

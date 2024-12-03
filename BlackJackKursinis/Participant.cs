@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace BlackJackKursinis
 {
-    internal class Participant
+    public abstract class Participant
     {
 
         public List<Card> hand;
-        public int score;
+        private int score {  get; set; }
         public int aceCount;
 
         protected Participant()
@@ -19,6 +19,9 @@ namespace BlackJackKursinis
             score = 0;
             aceCount = 0;
         }
+
+        public int getScore() { return score; }
+        public void updateScore(int newScore) { score = newScore; }
 
         public void Hit(Deck deck)
         {
@@ -32,7 +35,7 @@ namespace BlackJackKursinis
 
 
         }
-        public void acesCheck()
+        protected void acesCheck()
         {
             while (score > 21 && aceCount > 0)
             {
@@ -40,6 +43,8 @@ namespace BlackJackKursinis
                 aceCount -= 1;
             }
         }
+
+        //public abstract void TakeTurn(Deck deck, InputOutput io, ref double playerBet);
 
     }
 }

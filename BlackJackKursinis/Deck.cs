@@ -6,19 +6,30 @@ using System.Threading.Tasks;
 
 namespace BlackJackKursinis
 {
-    internal class Deck
+    public class Deck
     {
-
+        private static Deck singletonInstance;
         List<Card> deck;
         Random rng = new Random();
+        
 
-        public Deck()
+        private Deck()
         {
-            createDeck();
+            rng = new Random();
+            fillDeck();
             shuffleDeck();
         }
 
-        public void createDeck()
+        public static Deck GetInstance()
+        {
+            if (singletonInstance == null)
+            {
+                singletonInstance = new Deck();
+            }
+            return singletonInstance;
+        }
+
+        public void fillDeck()
         {
             deck = new List<Card>();
             string[] ranks = { "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King" ,"Ace" };
@@ -30,7 +41,7 @@ namespace BlackJackKursinis
                 {
                     for (int j = 0; j < suits.Length; j++)
                     {
-                        Card card = new Card(ranks[i], suits[j]);
+                        Card card = Card.CreateCard(ranks[i], suits[j]);
                         deck.Add(card);
                     }
                 }

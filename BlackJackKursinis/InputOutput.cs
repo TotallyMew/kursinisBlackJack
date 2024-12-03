@@ -3,23 +3,20 @@ using System.Collections.Generic;
 
 namespace BlackJackKursinis
 {
-    internal class InputOutput
+    public class InputOutput
     {
-        // Displays a message with a colon and reads input on the same line
         public string PromptMessage(string message)
         {
-            Console.Write(message + ": "); // Add a colon before taking input
+            Console.Write(message + ": "); 
             return Console.ReadLine();
         }
 
-        // Displays a simple message with a blank line after for clarity
         public void DisplayMessage(string message)
         {
             Console.WriteLine(message);
-            Console.WriteLine(); // Add a blank line after the message
+            Console.WriteLine(); 
         }
 
-        // Reads and parses a double value from the user
         public double ReadDouble(string prompt, double minValue = double.MinValue, double maxValue = double.MaxValue)
         {
             double value;
@@ -37,7 +34,6 @@ namespace BlackJackKursinis
             return value;
         }
 
-        // Reads a yes/no input from the user
         public bool ReadYesNo(string prompt)
         {
             while (true)
@@ -50,7 +46,6 @@ namespace BlackJackKursinis
             }
         }
 
-        // Displays a collection of items with a header
         public void DisplayCollection<T>(string header, IEnumerable<T> collection)
         {
             DisplayMessage(header);
@@ -60,7 +55,7 @@ namespace BlackJackKursinis
                 Console.WriteLine(item);
             }
 
-            Console.WriteLine(); // Add a blank line after the collection
+            Console.WriteLine();
         }
     }
 }
