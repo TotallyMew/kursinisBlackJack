@@ -8,280 +8,221 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Specialized;
 
+using System;
+using System.Threading;
+
 namespace BlackJackKursinis
 {
     internal class BlackJack
     {
-
         private Deck deck;
         private Dealer dealer;
         private Player player;
         private double playerBet;
+        private const int blackJack = 21;
+        private const int dealerMaxScore = 17;
+
+        private readonly InputOutput io;
 
         public BlackJack()
         {
+            io = new InputOutput();
             deck = new Deck();
             dealer = new Dealer();
             player = new Player();
-            startGame();
-
+            StartGame();
         }
 
-        public void startGame()
+        // Game Logic
+        public void StartGame()
         {
-
-
             playerBet = 0;
 
             while (player.playerMoney <= 0)
-            { 
-                Console.WriteLine("Welcome to BlackJack. How much money are you bringing to the table?");
-                string input = Console.ReadLine();
-                player.playerMoney = double.Parse(input);
+            {
+                player.playerMoney = io.ReadDouble("Welcome to BlackJack. How much money are you bringing to the table");
             }
 
-            while(playerBet <=0 || playerBet > player.playerMoney) {
-            Console.WriteLine("How much are you betting this hand?");
-            string playerBetString = Console.ReadLine();
-            playerBet = double.Parse(playerBetString);
-                }
+            while (playerBet <= 0 || playerBet > player.playerMoney)
+            {
+                playerBet = io.ReadDouble($"How much are you betting this hand? (Max: {player.playerMoney})");
+            }
 
             player.playerMoney -= playerBet;
-            
+
             dealer.hiddenCard = deck.drawCard();
             dealer.Hit(deck);
 
-            Console.WriteLine();
-            Console.WriteLine("Current amount of money: " + player.playerMoney);
-            Console.WriteLine("Current bet: " + playerBet);
-            Console.WriteLine();
+            io.DisplayMessage($"Current amount of money: {player.playerMoney}");
+            io.DisplayMessage($"Current bet: {playerBet}");
 
             for (int i = 0; i < 2; i++)
             {
                 player.Hit(deck);
             }
 
-            Console.WriteLine("Player's current hand:");
-            foreach (var playerCard in player.hand)
-            {
-                Console.WriteLine(playerCard);
-                    
-            }
-            Console.WriteLine("Player's current score: " + player.score);
-            Console.WriteLine();
-            Console.WriteLine("Dealer's current hand:");
-            foreach (var dealerCard in dealer.hand)
-            {
-                Console.WriteLine(dealerCard);
-            }
-            Console.WriteLine("Dealer's current score: " + dealer.score);
-            Console.WriteLine();
+            io.DisplayCollection("Player's current hand", player.hand);
+            io.DisplayMessage($"Player's current score: {player.score}");
+            io.DisplayCollection("Dealer's current hand", dealer.hand);
+            io.DisplayMessage($"Dealer's current score: {dealer.score}");
 
-
-            playerTurn();
-
-            dealerTurn();
-
-            checkWinner(player.score, dealer.score);
-
+            PlayerTurn();
+            DealerTurn();
+            CheckWinner(player.score, dealer.score);
         }
-        public void restartGame()
+
+        public void RestartGame()
         {
-            if(player.playerMoney == 0)
+            if (player.playerMoney == 0)
             {
-                Console.WriteLine("Unfortunately you have lost everything and are unable to continue the game, please comeback later.");
+                io.DisplayMessage("Unfortunately, you have lost everything and are unable to continue the game. Please come back later.");
                 Environment.Exit(0);
             }
 
+            io.DisplayMessage($"Current amount of money: {player.playerMoney}");
+            bool playAgain = io.ReadYesNo("Do you want to play again");
 
-            Console.WriteLine("Current amount of money: " + player.playerMoney);
-            Console.WriteLine("Do you want to play again? (Y/N)");
-            string input = Console.ReadLine().ToUpper();
-
-            if (input == "Y")
+            if (playAgain)
             {
-  
                 deck = new Deck();
                 dealer = new Dealer();
                 player.score = 0;
                 player.hand.Clear();
                 player.aceCount = 0;
 
-                Console.Clear(); 
-                startGame(); 
-            }
-            else if (input == "N")
-            {
-                Console.WriteLine("Thank you for playing! Goodbye.");
-                Environment.Exit(0);
+                Console.Clear();
+                StartGame();
             }
             else
             {
-                Console.WriteLine("Invalid input. Please enter 'Y' to play again or 'N' to exit.");
-                restartGame(); 
+                io.DisplayMessage("Thank you for playing! Goodbye.");
+                Environment.Exit(0);
             }
         }
 
-        public void playerTurn()
+        public void PlayerTurn()
         {
             int amountOfTurns = 0;
-            if (player.score == 21)
+
+            if (player.score == blackJack)
             {
-                Console.WriteLine("BlackJack! Player wins!");
+                io.DisplayMessage("BlackJack! Player wins!");
                 playerBet *= 2.5;
                 player.playerMoney += playerBet;
-                restartGame();
+                RestartGame();
             }
-            while (player.score < 21)
+
+            while (player.score < blackJack)
             {
-                Console.WriteLine("Press H to hit, S to stay or D to double down");
-                string input = Console.ReadLine().ToUpper();
+                string input = io.PromptMessage("Press H to hit, S to stay, or D to double down").ToUpper();
                 amountOfTurns++;
+
                 if (input == "H")
                 {
                     player.Hit(deck);
-                    Console.WriteLine();
-                    Console.WriteLine("Player's new hand: ");
-                    foreach (var playerCard in player.hand)
-                    {
-                        Console.WriteLine(playerCard);
-                    }
-                    Console.WriteLine("Player's score: " + player.score);
+                    io.DisplayCollection("Player's new hand", player.hand);
+                    io.DisplayMessage($"Player's score: {player.score}");
                 }
                 else if (input == "S")
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Player stands with score: " + player.score);
+                    io.DisplayMessage($"Player stands with score: {player.score}");
                     break;
                 }
-                else if(input == "D")
+                else if (input == "D")
                 {
-                    if(amountOfTurns > 1)
+                    if (amountOfTurns > 1 || player.playerMoney < playerBet * 2)
                     {
-                        Console.WriteLine("You cannot double down");
+                        io.DisplayMessage("You cannot double down.");
                         continue;
                     }
-                    if(player.playerMoney > playerBet*2)
-                    {
-                        Console.WriteLine("You cannot double down");
-                        continue;
-                    }
+
                     player.playerMoney -= playerBet;
                     playerBet *= 2;
                     player.Hit(deck);
-                    Console.WriteLine("Player's new hand: ");
-                    foreach (var playerCard in player.hand)
-                    {
-                        Console.WriteLine(playerCard);
-                    }
-                    Console.WriteLine("Player's score: " + player.score);
+                    io.DisplayCollection("Player's new hand", player.hand);
+                    io.DisplayMessage($"Player's score: {player.score}");
                     break;
                 }
                 else
                 {
-                    Console.WriteLine("Invalid input. Please enter 'H' to hit or 'S' to stand.");
+                    io.DisplayMessage("Invalid input. Please enter 'H' to hit, 'S' to stay, or 'D' to double down.");
                 }
             }
-            if (player.score > 21)
+
+            if (player.score > blackJack)
             {
-
-                Console.WriteLine("Bust! Player loses");
-                restartGame();
+                io.DisplayMessage("Bust! Player loses.");
+                RestartGame();
             }
-
-
         }
 
-
-        private void dealerTurn()
+        private void DealerTurn()
         {
-            Console.WriteLine("Dealer's turn.");
-            Console.WriteLine();
+            io.DisplayMessage("Dealer's turn");
             dealer.hand.Add(dealer.hiddenCard);
-            Console.WriteLine("Dealer reveals hidden card:");
-            Console.WriteLine(dealer.hiddenCard);
+            io.DisplayMessage("Dealer reveals hidden card:");
+            io.DisplayMessage(dealer.hiddenCard.ToString());
             dealer.score += dealer.hiddenCard.getValue();
             dealer.aceCount += dealer.hiddenCard.isAce() ? 1 : 0;
-            Console.WriteLine("Dealer's hand:");
 
-            foreach (var card in dealer.hand)
-            {
-                Console.WriteLine(card);
-            }
-
-            Console.WriteLine();
-
-            Console.WriteLine("Dealer's score after revealing hidden card: " + dealer.score);
-            Console.WriteLine();
+            io.DisplayCollection("Dealer's hand", dealer.hand);
+            io.DisplayMessage($"Dealer's score after revealing hidden card: {dealer.score}");
             Thread.Sleep(3000);
-            while (dealer.score < 17)
+
+            while (dealer.score < dealerMaxScore)
             {
-
-
                 Card newCard = deck.drawCard();
-                //dealer.hiddenCard.Add(newCard);
                 dealer.score += newCard.getValue();
                 dealer.aceCount += newCard.isAce() ? 1 : 0;
 
-                Console.WriteLine("Dealer draws: " + newCard);
-                Console.WriteLine("Dealer's current score: " + dealer.score);
-                Console.WriteLine();
+                io.DisplayMessage($"Dealer draws: {newCard}");
+                io.DisplayMessage($"Dealer's current score: {dealer.score}");
                 Thread.Sleep(2000);
             }
 
-
-            if (dealer.score > 21)
+            if (dealer.score > blackJack)
             {
-                Console.WriteLine("Bust! Dealer has lost, player wins!");
+                io.DisplayMessage("Bust! Dealer has lost, player wins!");
                 player.playerMoney += (2 * playerBet);
-                restartGame();
+                RestartGame();
             }
-            Console.WriteLine();
-            Console.WriteLine("Dealer's final score: " + dealer.score);
 
-
+            io.DisplayMessage($"Dealer's final score: {dealer.score}");
         }
 
-        private void checkWinner(int playerScore, int dealerScore)
+        private void CheckWinner(int playerScore, int dealerScore)
         {
-
-            if (playerScore == 21 && dealerScore != 21)
+            if (playerScore == blackJack && dealerScore != blackJack)
             {
-                Console.WriteLine("Player has Blackjack! Player wins!");
+                io.DisplayMessage("Player has Blackjack! Player wins!");
                 player.playerMoney += (2.5 * playerBet);
-
             }
-            else if (dealerScore == 21 && playerScore != 21)
+            else if (dealerScore == blackJack && playerScore != blackJack)
             {
-                Console.WriteLine("Dealer has Blackjack! Dealer wins!");
-                
-
+                io.DisplayMessage("Dealer has Blackjack! Dealer wins!");
             }
-            else if (playerScore == 21 && dealerScore == 21)
+            else if (playerScore == blackJack && dealerScore == blackJack)
             {
-                Console.WriteLine("Both have Blackjack! It's a tie!");
+                io.DisplayMessage("Both have Blackjack! It's a tie!");
                 player.playerMoney += playerBet;
-
             }
-            else if (playerScore > dealerScore && playerScore < 21)
+            else if (playerScore > dealerScore && playerScore < blackJack)
             {
-                Console.WriteLine("Player wins with a score of " + playerScore + " against dealer's " + dealerScore + ".");
+                io.DisplayMessage($"Player wins with a score of {playerScore} against dealer's {dealerScore}.");
                 player.playerMoney += (playerBet * 2);
-
             }
-            else if (dealerScore > playerScore && dealerScore<21)
+            else if (dealerScore > playerScore && dealerScore < blackJack)
             {
-                Console.WriteLine("Dealer wins with a score of " + dealerScore + " against player's " + playerScore + ".");
-               
+                io.DisplayMessage($"Dealer wins with a score of {dealerScore} against player's {playerScore}.");
             }
             else
             {
-                Console.WriteLine("It's a tie with both scoring " + playerScore + "!");
+                io.DisplayMessage($"It's a tie with both scoring {playerScore}!");
                 player.playerMoney += playerBet;
             }
 
-            restartGame();
+            RestartGame();
         }
-
     }
 }
+
