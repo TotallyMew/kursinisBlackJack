@@ -7,21 +7,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Specialized;
-
 using System;
 using System.Threading;
+using System.ComponentModel;
 
 namespace BlackJackKursinis
 {
-    internal class BlackJack
+    public class BlackJack
     {
         private readonly Deck deck;
         private Dealer dealer;
         private readonly Player player;
         private double playerBet;
-        private const int blackJack = 21;
-        private const int dealerMaxScore = 17;
-
         private readonly InputOutput io;
 
         public BlackJack()
@@ -31,11 +28,10 @@ namespace BlackJackKursinis
             deck = Deck.GetInstance(); // creational design pattern - singleton
             dealer = new Dealer();
             player = new Player();
-            StartGame();
         }
-        private void ExecuteTurn(ITurnStrategy strategy, Participant participant, Deck deck, InputOutput io, ref double playerBet)
+        private void executeTurn(ITurnStrategy strategy, Participant participant, Deck deck, InputOutput io, ref double playerBet)
         {
-            strategy.ExecuteTurn(participant, deck, io, ref playerBet);
+            strategy.executeTurn(participant, deck, io, ref playerBet);
         }
         public void StartGame()
         {
@@ -43,12 +39,12 @@ namespace BlackJackKursinis
 
             while (player.playerMoney <= 0)
             {
-                player.playerMoney = io.ReadDouble("Welcome to BlackJack. How much money are you bringing to the table?");
+                player.playerMoney = io.readDouble("Welcome to BlackJack. How much money are you bringing to the table?");
             }
 
             while (playerBet <= 0 || playerBet > player.playerMoney)
             {
-                playerBet = io.ReadDouble($"How much are you betting this hand? (Max: {player.playerMoney})");
+                playerBet = io.readDouble($"How much are you betting this hand? (Max: {player.playerMoney})");
             }
 
             player.playerMoney -= playerBet;
@@ -56,39 +52,48 @@ namespace BlackJackKursinis
             dealer.hiddenCard = deck.drawCard();
             dealer.Hit(deck);
 
-            io.DisplayMessage($"Current amount of money: {player.playerMoney}");
-            io.DisplayMessage($"Current bet: {playerBet}");
+            io.displayMessage($"Current amount of money: {player.playerMoney}");
+            io.displayMessage($"Current bet: {playerBet}");
 
             for (int i = 0; i < 2; i++)
             {
                 player.Hit(deck);
             }
 
-            io.DisplayCollection("Player's current hand", player.hand);
-            io.DisplayMessage($"Player's current score: {player.getScore()}");
-            io.DisplayCollection("Dealer's current hand", dealer.hand);
-            io.DisplayMessage($"Dealer's current score: {dealer.getScore()}");
+            io.displayCollection("Player's current hand", player.hand);
+            io.displayMessage($"Player's current score: {player.getScore()}");
+            io.displayCollection("Dealer's current hand", dealer.hand);
+            io.displayMessage($"Dealer's current score: {dealer.getScore()}");
 
             ITurnStrategy playerTurnStrategy = new PlayerTurnStrategy();
-            ExecuteTurn(playerTurnStrategy, player, deck, io, ref playerBet);
+            executeTurn(playerTurnStrategy, player, deck, io, ref playerBet);
 
             ITurnStrategy dealerTurnStrategy = new DealerTurnStrategy();
-            ExecuteTurn(dealerTurnStrategy, dealer, deck, io, ref playerBet);
+            executeTurn(dealerTurnStrategy, dealer, deck, io, ref playerBet);
 
-            CheckWinner(player.getScore(), dealer.getScore());
+           getWinner(player.getScore(), dealer.getScore());
         }
 
 
-        public void RestartGame()
+        public void getWinner(int playerScore, int dealerScore)
+        {
+            var winner = checkWinnerType(playerScore, dealerScore);
+            double winSum = calculatePayout(winner, playerBet);
+            player.playerMoney += winSum;
+            displayResult(winner, playerScore, dealerScore);
+            restartGame();
+        }
+
+        public void restartGame()
         {
             if (player.playerMoney == 0)
             {
-                io.DisplayMessage("Unfortunately, you have lost everything and are unable to continue the game. Please come back later.");
+                io.displayMessage("Unfortunately, you have lost everything and are unable to continue the game. Please come back later.");
                 Environment.Exit(0);
             }
 
-            io.DisplayMessage($"Current amount of money: {player.playerMoney}");
-            bool playAgain = io.ReadYesNo("Do you want to play again");
+            io.displayMessage($"Current amount of money: {player.playerMoney}");
+            bool playAgain = io.readYesNo("Do you want to play again");
 
             if (playAgain)
             {
@@ -103,47 +108,87 @@ namespace BlackJackKursinis
             }
             else
             {
-                io.DisplayMessage("Thank you for playing! Goodbye.");
+                io.displayMessage("Thank you for playing! Goodbye.");
                 Environment.Exit(0);
             }
         }
 
-
-
-        private void CheckWinner(int playerScore, int dealerScore)
+        public enum winnerType
         {
-            if (playerScore > blackJack)
-                io.DisplayMessage("Bust! Player loses.");
-            else if (dealerScore > blackJack)
+            Player,
+            PlayerBlackjack,
+            DealerBlackjack,
+            Dealer,
+            Tie,
+            PlayerBust,
+            DealerBust
+        }
+
+        public winnerType checkWinnerType(int playerScore, int dealerScore)
+        {
+            if (playerScore == GameConstants.blackJack && dealerScore != GameConstants.blackJack)
+                return winnerType.PlayerBlackjack;
+
+            if (dealerScore == GameConstants.blackJack && playerScore != GameConstants.blackJack)
+                return winnerType.DealerBlackjack;
+
+            if (playerScore == GameConstants.blackJack && dealerScore == GameConstants.blackJack)
+                return winnerType.Tie;
+
+            if (playerScore > GameConstants.blackJack)
+                return winnerType.PlayerBust;
+
+            if (dealerScore > GameConstants.blackJack)
+                return winnerType.DealerBust;
+
+            if (playerScore > dealerScore)
+                return winnerType.Player;
+
+            if (dealerScore > playerScore)
+                return winnerType.Dealer;
+
+            return winnerType.Tie;
+        }
+        public double calculatePayout(winnerType winnertype, double playerBet)
+        {
+            return winnertype switch
             {
-                io.DisplayMessage("Bust! Dealer has lost, player wins!");
-                player.playerMoney += (2 * playerBet);
-            }
-            else if (playerScore == blackJack && dealerScore != blackJack)
+
+                winnerType.Player => playerBet * 2,
+                winnerType.PlayerBust =>0,
+                winnerType.PlayerBlackjack => playerBet * 2.5,
+                winnerType.DealerBust => playerBet *2,
+                winnerType.Tie => playerBet,
+                _ => 0,
+            };
+        }
+
+        public void displayResult(winnerType winner, int playerScore, int dealerScore)
+        {
+            switch (winner)
             {
-                io.DisplayMessage("Player has Blackjack! Player wins!");
-                player.playerMoney += (2.5 * playerBet);
+                case winnerType.PlayerBlackjack:
+                    io.displayMessage("Player has Blackjack! Player wins!");
+                    break;
+                case winnerType.DealerBlackjack:
+                    io.displayMessage("Dealer has Blackjack! Dealer wins!");
+                    break;
+                case winnerType.PlayerBust:
+                    io.displayMessage("Bust! Player loses.");
+                    break;
+                case winnerType.DealerBust:
+                    io.displayMessage("Bust! Dealer has lost, player wins!");
+                    break;
+                case winnerType.Player:
+                    io.displayMessage($"Player wins with a score of {playerScore} against dealer's {dealerScore}.");
+                    break;
+                case winnerType.Dealer:
+                    io.displayMessage($"Dealer wins with a score of {dealerScore} against player's {playerScore}.");
+                    break;
+                case winnerType.Tie:
+                    io.displayMessage($"It's a tie with both scoring {playerScore}!");
+                    break;
             }
-            else if (dealerScore == blackJack && playerScore != blackJack)
-                io.DisplayMessage("Dealer has Blackjack! Dealer wins!");
-            else if (playerScore == blackJack && dealerScore == blackJack)
-            {
-                io.DisplayMessage("Both have Blackjack! It's a tie!");
-                player.playerMoney += playerBet;
-            }
-            else if (playerScore > dealerScore)
-            {
-                io.DisplayMessage($"Player wins with a score of {playerScore} against dealer's {dealerScore}.");
-                player.playerMoney += (playerBet * 2);
-            }
-            else if (dealerScore > playerScore)
-                io.DisplayMessage($"Dealer wins with a score of {dealerScore} against player's {playerScore}.");
-            else
-            {
-                io.DisplayMessage($"It's a tie with both scoring {playerScore}!");
-                player.playerMoney += playerBet;
-            }
-            RestartGame();
         }
     }
 }

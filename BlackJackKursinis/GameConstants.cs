@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BlackJackKursinis
 {
-    internal class Dealer : Participant
+    public class GameConstants
     {
-
-        public Card hiddenCard;
-
-        public Dealer() 
-        {
-        }
+        public const int blackJack = 21;
+        public const int dealerMaxScore = 17;
     }
-
 }

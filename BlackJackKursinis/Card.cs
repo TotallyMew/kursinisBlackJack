@@ -8,8 +8,8 @@ namespace BlackJackKursinis
 {
     public class Card
     {
-        private string rank;
-        private string suit;
+        private readonly string rank;
+        private readonly string suit;
 
         private Card(string rank, string suit) 
         {

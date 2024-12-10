@@ -8,26 +8,18 @@ namespace BlackJackKursinis
 {
     public class DealerTurnStrategy : ITurnStrategy
     {
-        public void ExecuteTurn(Participant participant, Deck deck, InputOutput io, ref double playerBet)
+        public void executeTurn(Participant participant, Deck deck, InputOutput io, ref double playerBet)
         {
             Dealer dealer = (Dealer)participant;
-            io.DisplayMessage("Dealer's turn...");
+            io.displayMessage("Dealer's turn...");
 
-            while (dealer.getScore() < 17)
+            while (dealer.getScore() < GameConstants.dealerMaxScore)
             {
                 dealer.Hit(deck);
-                io.DisplayCollection("Dealer's hand", dealer.hand);
-                io.DisplayMessage($"Dealer's score: {dealer.getScore()}");
+                io.displayCollection("Dealer's hand", dealer.hand);
+                io.displayMessage($"Dealer's score: {dealer.getScore()}");
             }
-
-            if (dealer.getScore() > 21)
-            {
-                io.DisplayMessage("Bust! Dealer loses.");
-            }
-            else
-            {
-                io.DisplayMessage($"Dealer stands with score: {dealer.getScore()}");
-            }
+                io.displayMessage($"Dealer stands with score: {dealer.getScore()}");
         }
     }
 

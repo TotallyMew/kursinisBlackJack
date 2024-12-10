@@ -1,2 +1,3 @@
 ﻿using BlackJackKursinis;
-BlackJack blackJack = new BlackJack();
+BlackJack blackJack = new();
+blackJack.StartGame();

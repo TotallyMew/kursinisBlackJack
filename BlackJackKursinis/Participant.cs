@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BlackJackKursinis
 {
-    public abstract class Participant
+    public class Participant
     {
 
         public List<Card> hand;
@@ -37,14 +37,12 @@ namespace BlackJackKursinis
         }
         protected void acesCheck()
         {
-            while (score > 21 && aceCount > 0)
+            while (score > GameConstants.blackJack && aceCount > 0)
             {
                 score -= 10;
                 aceCount -= 1;
             }
         }
-
-        //public abstract void TakeTurn(Deck deck, InputOutput io, ref double playerBet);
 
     }
 }

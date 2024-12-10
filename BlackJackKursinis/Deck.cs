@@ -9,8 +9,8 @@ namespace BlackJackKursinis
     public class Deck
     {
         private static Deck singletonInstance;
-        List<Card> deck;
-        Random rng = new Random();
+        public List<Card> deck;
+        readonly Random rng = new Random();
         
 
         private Deck()
@@ -60,7 +60,17 @@ namespace BlackJackKursinis
                 deck[j] = temp;
             }
         }
+        
 
+        public void AddCardToTop(Card card)
+        {
+            if (deck == null)
+            {
+                deck = new List<Card>();
+            }
+
+            deck.Add(card); // Adds the card to the top of the deck
+        }
 
         public Card drawCard()
         {

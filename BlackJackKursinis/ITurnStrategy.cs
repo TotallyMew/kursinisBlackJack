@@ -8,6 +8,6 @@ namespace BlackJackKursinis
 {
     public interface ITurnStrategy
     {
-        void ExecuteTurn(Participant participant, Deck deck, InputOutput io, ref double playerBet);
+        void executeTurn(Participant participant, Deck deck, InputOutput io, ref double playerBet);
     }
 }
